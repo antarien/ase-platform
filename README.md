@@ -8,9 +8,9 @@
 
 Part of [ASE - Antares Simulation Engine](../../..)
 
-## Status
+## Overview
 
-**Not Yet Implemented** - This module is a stub for future development.
+The ase-platform module provides cross-platform abstractions for OS-specific functionality that goes beyond the C++20 standard library. While C++20 covers many portable patterns, certain performance-critical features still require platform-specific code: pinning game loop threads to specific CPU cores via thread affinity, memory-mapping large terrain data files for zero-copy access, sub-microsecond timing for profiling individual system ticks, and SIMD intrinsics (SSE/AVX on x86, NEON on ARM) for batch-processing component arrays. The module targets Linux (primary development), macOS (Apple Silicon), Windows (MSVC and MinGW), and WebAssembly (Emscripten) as a future target. All abstractions follow the zero-cost principle — they compile to the same machine code as direct platform API calls, with compile-time detection via preprocessor guards rather than runtime checks. Where a platform-specific feature is unavailable, the module falls back gracefully to the equivalent std:: facility. As a Layer 0 foundation library it has no ASE dependencies and can be used by any module in the engine stack.
 
 ## Planned Features
 

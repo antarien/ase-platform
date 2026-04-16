@@ -1,25 +1,18 @@
 cmake_minimum_required(VERSION 3.20)
 
 #[[
-ASE FOUNDATION BUILD CONFIGURATION (STUB)
+ASE FOUNDATION BUILD CONFIGURATION
 
 @file        CMakeLists.txt
 @brief       Build configuration for ase-platform
-@description Platform abstraction - OS-specific functionality.
-             (STUB - Not yet implemented)
+@description OS-abstracted primitives (Thread, time, SIMD, system info).
+             Layer 0 foundation — no ASE dependencies.
 
 @module      ase-platform
 @layer       0 (Foundation)
 @created     2025-12-15
-@modified    2026-01-30
-@version     00.00.05.00005 [poc]
-
-CMAKE MODULE COMPLIANCE
-
-[ ] cmake_minimum_required(VERSION 3.20) as FIRST line
-[ ] project() with VERSION and LANGUAGES CXX
-[ ] message(STATUS) for configuration output
-[ ] Stub target until implementation
+@modified    2026-04-16
+@version     00.00.11.00011 [init]
 ]]
 
 # Parse local VERSION (SSOT) if not building from root
@@ -48,19 +41,46 @@ configure_file(
 )
 
 # ==============================================================================
-# BUILD CONFIGURATION
+# EXTERNAL DEPENDENCIES
+# Threads::Threads resolves to pthread on POSIX and to the Win32 threading
+# model on Windows. Platform specifics stay hidden behind a PIMPL in
+# src/thread.cpp and never leak through the public header.
 # ==============================================================================
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
 
-
-
-message(STATUS "Configuring ${PROJECT_NAME} v${PROJECT_VERSION} (STUB)")
-
-#[[
-STUB MODULE
-Platform abstraction layer - not yet implemented.
-]]
-add_custom_target(${PROJECT_NAME}_stub
-    COMMAND ${CMAKE_COMMAND} -E echo "Module ${PROJECT_NAME} is a stub"
+# ==============================================================================
+# TARGET
+# ==============================================================================
+set(ASE_PLATFORM_PUBLIC_HEADERS
+    include/ase/platform/thread.hpp
+    "${CMAKE_CURRENT_BINARY_DIR}/include/ase/platform/version.hpp"
 )
 
-#[[ VERBOTEN: No dependencies until implemented! ]]
+set(ASE_PLATFORM_SOURCES
+    src/thread.cpp
+)
+
+add_library(${PROJECT_NAME} STATIC ${ASE_PLATFORM_SOURCES})
+add_library(ase::platform ALIAS ${PROJECT_NAME})
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        Threads::Threads
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    PUBLIC_HEADER "${ASE_PLATFORM_PUBLIC_HEADERS}"
+)
+
+message(STATUS "Configuring ${PROJECT_NAME} v${PROJECT_VERSION} (init)")

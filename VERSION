@@ -39,10 +39,10 @@
 #   stable = Production ready (set manually)
 #
 # ==============================================================================
-ASE_PLATFORM=00.00.10.00010
+ASE_PLATFORM=00.00.11.00011
 ASE_PLATFORM_NAME=Platform Abstraction
-ASE_PLATFORM_DESC=OS-specific abstractions
+ASE_PLATFORM_DESC=OS-abstracted primitives (Thread, time, SIMD, system info)
 ASE_PLATFORM_LAYER=0
-ASE_PLATFORM_STATUS=poc
+ASE_PLATFORM_STATUS=init
 ASE_PLATFORM_CREATED=2025-12-15
-ASE_PLATFORM_UPDATED=2026-04-08
+ASE_PLATFORM_UPDATED=2026-04-16

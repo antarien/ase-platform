@@ -11,8 +11,22 @@ ASE FOUNDATION BUILD CONFIGURATION
 @module      ase-platform
 @layer       0 (Foundation)
 @created     2025-12-15
-@modified    2026-04-16
+@modified    2026-08-24
 @version     00.00.11.00011 [init]
+
+CMAKE MODULE COMPLIANCE
+
+[ ] cmake_minimum_required(VERSION 3.20) as FIRST line
+[ ] project() with VERSION and LANGUAGES CXX
+[ ] message(STATUS) for configuration output
+[ ] add_library() with STATIC (compiled unit)
+[ ] add_library(ase::{module} ALIAS ...) for namespace
+[ ] target_include_directories() with PUBLIC and generator expressions
+[ ] target_compile_features() with cxx_std_20
+[ ] target_link_libraries() with Threads::Threads (Layer 0 allowed external)
+[ ] if(ASE_BUILD_TESTS) block for tests
+[ ] include(GNUInstallDirs) for installation
+[ ] install(DIRECTORY include/ ...) for headers
 ]]
 
 # Parse local VERSION (SSOT) if not building from root
@@ -53,8 +67,13 @@ find_package(Threads REQUIRED)
 # ==============================================================================
 # TARGET
 # ==============================================================================
+#[[ Diese Liste ist die SSOT dessen, was das Modul veroeffentlicht. sleep.hpp fehlte hier,
+    obwohl core/ase-ecs sie an drei Stellen einbindet (app.cpp, internal/boot_logger.cpp,
+    internal/shutdown_sequence.cpp) — eine nicht eingetragene Datei faellt aus der Installation
+    und meldet das nie, weil der Bau gruen bleibt. ]]
 set(ASE_PLATFORM_PUBLIC_HEADERS
     include/ase/platform/thread.hpp
+    include/ase/platform/sleep.hpp
     "${CMAKE_CURRENT_BINARY_DIR}/include/ase/platform/version.hpp"
 )
 
@@ -78,9 +97,30 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         Threads::Threads
 )
+#[[ VERBOTEN: No ASE dependencies in Layer 0! Only external libs allowed!
+    Threads::Threads ist genau so eine: sie kommt von der Toolchain, nicht aus diesem Baum.
+    Eine ase::-Kante waere hier auch dann falsch, wenn das Ziel tiefer laege — L0 ist der
+    Boden, unter dem nichts mehr ist. ]]
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     PUBLIC_HEADER "${ASE_PLATFORM_PUBLIC_HEADERS}"
 )
 
 message(STATUS "Configuring ${PROJECT_NAME} v${PROJECT_VERSION} (init)")
+
+include(GNUInstallDirs)
+
+install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}-targets
+)
+
+install(DIRECTORY include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+#[[ Die Existenzpruefung ist notwendig, nicht vorsichtig: dieses Modul hat noch kein
+    tests/-Verzeichnis, und ein add_subdirectory auf ein fehlendes Verzeichnis bricht die
+    Konfiguration des GANZEN Baums. Sobald ein Test entsteht, greift der Zweig von selbst. ]]
+if(ASE_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+    add_subdirectory(tests)
+endif()

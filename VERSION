@@ -39,7 +39,7 @@
 #   stable = Production ready (set manually)
 #
 # ==============================================================================
-ASE_PLATFORM=00.00.13.00013
+ASE_PLATFORM=00.00.14.00014
 ASE_PLATFORM_NAME=Platform Abstraction
 ASE_PLATFORM_DESC=OS-specific abstractions
 ASE_PLATFORM_LAYER=0
